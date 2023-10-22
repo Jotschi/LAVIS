@@ -13,7 +13,6 @@ import torch.nn as nn
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
-# from lavis.models.blip2_models.modeling_mistral import MistralForCausalLM, MistralConfig
 from transformers import AutoTokenizer, MistralForCausalLM, MistralConfig
 import transformers
 
@@ -54,7 +53,7 @@ class Blip2Mistral(Blip2Base):
         """
         super().__init__()
         transformers_version = version.parse(transformers.__version__)
-        assert transformers_version >= version.parse("4.27"), "BLIP-2 Mistral requires transformers>=4.27"
+        assert transformers_version >= version.parse("4.34"), "BLIP-2 Mistral requires transformers>=4.34"
         
         self.tokenizer = self.init_tokenizer()
 
@@ -78,15 +77,16 @@ class Blip2Mistral(Blip2Base):
             layer.output = None
             layer.intermediate = None
 
-        self.mistral_tokenizer = AutoTokenizer.from_pretrained(mistral_model, use_fast=False)
+        self.mistral_tokenizer = AutoTokenizer.from_pretrained(mistral_model)
         self.mistral_model = MistralForCausalLM.from_pretrained(
             mistral_model, torch_dtype=torch.float16
         )
         for name, param in self.mistral_model.named_parameters():
             param.requires_grad = False
-        self.eos_token_id = self.mistral_tokenizer(
-            "\n", add_special_tokens=False
-        ).input_ids[0]
+        self.eos_token_id = 2
+        #self.eos_token_id = self.mistral_tokenizer(
+        #    "\n", add_special_tokens=False
+        #).input_ids[0]
 
         self.mistral_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.mistral_model.config.hidden_size
@@ -125,10 +125,10 @@ class Blip2Mistral(Blip2Base):
 
         input_tokens = self.mistral_tokenizer(
             text,
-            return_tensors="pt",
             padding="longest",
             truncation=True,
             max_length=self.max_txt_len,
+            return_tensors="pt",
         ).to(image.device)
 
         targets = input_tokens.input_ids.masked_fill(
@@ -221,7 +221,6 @@ class Blip2Mistral(Blip2Base):
             ).to(image.device)
             attention_mask = torch.cat([atts_mistral, input_tokens.attention_mask], dim=1)
             
-            # new version for transformers>=4.27
             inputs_embeds = self.mistral_model.get_input_embeddings()(input_tokens.input_ids)
             inputs_embeds = torch.cat([inputs_mistral,inputs_embeds],dim=1)
             
@@ -242,34 +241,6 @@ class Blip2Mistral(Blip2Base):
             output_text = self.mistral_tokenizer.batch_decode(
                 outputs, skip_special_tokens=True
             )
-                            
-            # previous version for transformers<4.27
-            # if use_nucleus_sampling:
-            #     query_embeds = inputs_mistral.repeat_interleave(num_captions, dim=0)
-            #     num_beams = 1
-            # else:
-            #     query_embeds = inputs_mistral.repeat_interleave(num_beams, dim=0)
-
-            # outputs = self.mistral_model.generate(
-            #     input_ids=input_ids,
-            #     query_embeds=query_embeds,
-            #     attention_mask=attention_mask,
-            #     do_sample=use_nucleus_sampling,
-            #     top_p=top_p,
-            #     temperature=temperature,
-            #     num_beams=num_beams,
-            #     max_new_tokens=max_length,
-            #     min_length=min_length,
-            #     eos_token_id=self.eos_token_id,
-            #     repetition_penalty=repetition_penalty,
-            #     length_penalty=length_penalty,
-            #     num_return_sequences=num_captions,
-            # )
-
-            # prompt_length = input_tokens.input_ids.shape[1]
-            # output_text = self.mistral_tokenizer.batch_decode(
-            #     outputs[:, prompt_length:], skip_special_tokens=True
-            # )
             
             output_text = [text.strip() for text in output_text]
             return output_text
@@ -326,7 +297,6 @@ class Blip2Mistral(Blip2Base):
         
             attention_mask = torch.cat([atts_mistral, input_tokens.attention_mask], dim=1)
             
-            # require transformers>=4.27
             inputs_embeds = self.mistral_model.get_input_embeddings()(input_tokens.input_ids)
             inputs_embeds = torch.cat([inputs_mistral,inputs_embeds],dim=1)
             

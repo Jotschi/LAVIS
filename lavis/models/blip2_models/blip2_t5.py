@@ -101,7 +101,6 @@ class Blip2T5(Blip2Base):
 
     def forward(self, samples):
         image = samples["image"]
-
         with self.maybe_autocast():
             image_embeds = self.ln_vision(self.visual_encoder(image))
         image_atts = torch.ones(image_embeds.size()[:-1], dtype=torch.long).to(
