@@ -13,25 +13,25 @@ import torch.nn as nn
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
-from transformers import AutoTokenizer, MistralForCausalLM, MistralConfig
+from transformers import AutoTokenizer
+from awq import AutoAWQForCausalLM
 import transformers
 
-
-@registry.register_model("blip2_mistral")
-class Blip2Mistral(Blip2Base):
+@registry.register_model("blip2_mistral_awq")
+class Blip2MistralAWQ(Blip2Base):
     """
-    BLIP2 Mistral model.
+    BLIP2 Mistral AWQ model.
     Supported model types:
-        - pretrained_mistral7b: pretrained model with Mistral 7B
-        - caption_coco_mistral7b: fintuned image captioning model with Mistral 7B
+        - pretrained_mistral7b_awq: pretrained model with Mistral 7B
+        - caption_coco_mistral7b_awq: fintuned image captioning model with Mistral 7B
     Usage:
         >>> from lavis.models import load_model
-        >>> model = load_model("blip2_mistral", "caption_coco_mistral7b")
+        >>> model = load_model("blip2_mistral_awq", "caption_coco_mistral7b_awq")
     """
 
     PRETRAINED_MODEL_CONFIG_DICT = {
-        "pretrain_mistral7b": "configs/models/blip2/blip2_pretrain_mistral7b.yaml",
-        "caption_coco_mistral7b": "configs/models/blip2/blip2_caption_mistral7b.yaml",
+        "pretrain_mistral7b_awq": "configs/models/blip2/blip2_pretrain_mistral7b_awq.yaml",
+        "caption_coco_mistral7b_awq": "configs/models/blip2/blip2_caption_mistral7b_awq.yaml",
     }
 
     def __init__(
@@ -43,7 +43,7 @@ class Blip2Mistral(Blip2Base):
         vit_precision="fp16",
         freeze_vit=True,
         num_query_token=32,
-        mistral_model="mistralai/Mistral-7B-v0.1",
+        mistral_model="TheBloke/Mistral-7B-v0.1-AWQ",
         prompt="",
         max_txt_len=32,
         apply_lemmatizer=False,
@@ -52,6 +52,14 @@ class Blip2Mistral(Blip2Base):
         apply_lemmatizer: when set to True, postprocess predict_answers() result with lemmas.
         """
         super().__init__()
+
+        logging.info("Loading model: " + mistral_model)
+        self.mistral_model = AutoAWQForCausalLM.from_quantized(mistral_model,
+                                    fuse_layers=True,
+                                    batch_size=1,
+                                    trust_remote_code=False,
+                                    safetensors=True)
+        logging.info("Model loaded")
         transformers_version = version.parse(transformers.__version__)
         assert transformers_version >= version.parse("4.34"), "BLIP-2 Mistral requires transformers>=4.34"
         
@@ -80,9 +88,6 @@ class Blip2Mistral(Blip2Base):
         self.mistral_tokenizer = AutoTokenizer.from_pretrained(mistral_model)
         self.mistral_tokenizer.pad_token = self.mistral_tokenizer.eos_token
 
-        self.mistral_model = MistralForCausalLM.from_pretrained(
-            mistral_model, torch_dtype=torch.float16
-        )
         for name, param in self.mistral_model.named_parameters():
             param.requires_grad = False
         #self.eos_token_id = 2
@@ -91,7 +96,7 @@ class Blip2Mistral(Blip2Base):
         ).input_ids[0]
 
         self.mistral_proj = nn.Linear(
-            self.Qformer.config.hidden_size, self.mistral_model.config.hidden_size
+            self.Qformer.config.hidden_size, self.mistral_model.model.config.hidden_size
         )
 
         self.max_txt_len = max_txt_len
@@ -144,7 +149,7 @@ class Blip2Mistral(Blip2Base):
         )
         targets = torch.cat([empty_targets, targets], dim=1)
 
-        inputs_embeds = self.mistral_model.model.decoder.embed_tokens(input_tokens.input_ids)
+        inputs_embeds = self.mistral_model.model.get_decoder().embed_tokens(input_tokens.input_ids)
         inputs_embeds = torch.cat([inputs_mistral, inputs_embeds], dim=1)
         attention_mask = torch.cat([atts_mistral, input_tokens.attention_mask], dim=1)
 

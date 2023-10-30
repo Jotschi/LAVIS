@@ -4,8 +4,8 @@
  # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_mistral
-  model_type: pretrain_mistral7b
+  arch: blip2_mistral_awq
+  model_type: pretrain_mistral7b_awq
   load_pretrained: False
   # intialize stage 2 pretraining from stage 1 pretrained model
   pretrained: "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained.pth"
@@ -46,13 +46,13 @@ run:
 
   weight_decay: 0.05
   max_epoch: 10
-  batch_size_train: 4
-  batch_size_eval: 8
+  batch_size_train: 1
+  batch_size_eval: 2
   num_workers: 4
   warmup_steps: 2000
 
   seed: 42
-  output_dir: "output/BLIP2/Pretrain_stage2"
+  output_dir: "output/BLIP2/Pretrain_stage2_awq"
 
   amp: True
   resume_ckpt_path: null
