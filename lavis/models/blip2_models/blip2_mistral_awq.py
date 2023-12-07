@@ -145,21 +145,22 @@ class Blip2MistralAWQ(Blip2Base):
             targets[:, : self.prompt_length] = -100  # do not apply loss to the prompt
 
         empty_targets = (
-            torch.ones(atts_mistral.size(), dtype=torch.long).to(image.device).fill_(-100)
+            torch.ones(atts_mistral.size(), dtype=torch.half).to(image.device).fill_(-100)
         )
         targets = torch.cat([empty_targets, targets], dim=1)
 
         inputs_embeds = self.mistral_model.model.get_decoder().embed_tokens(input_tokens.input_ids)
-        inputs_embeds = torch.cat([inputs_mistral, inputs_embeds], dim=1)
-        attention_mask = torch.cat([atts_mistral, input_tokens.attention_mask], dim=1)
+        inputs_embeds = torch.cat([inputs_mistral, inputs_embeds], dim=1).to(torch.half)
+        attention_mask = torch.cat([atts_mistral, input_tokens.attention_mask], dim=1).to(torch.half)
 
-        with self.maybe_autocast():
-            outputs = self.mistral_model(
-                inputs_embeds=inputs_embeds,
-                attention_mask=attention_mask,
-                return_dict=True,
-                labels=targets,
-            )
+        #with self.maybe_autocast():
+        #with torch.autocast("cuda"):
+        outputs = self.mistral_model(
+            inputs_embeds=inputs_embeds,
+            attention_mask=attention_mask,
+            return_dict=True,
+            labels=targets,
+        )
         loss = outputs.loss
 
         return {"loss": loss}
@@ -372,7 +373,7 @@ class Blip2MistralAWQ(Blip2Base):
 
         drop_path_rate = cfg.get("drop_path_rate", 0)
         use_grad_checkpoint = cfg.get("use_grad_checkpoint", False)
-        vit_precision = cfg.get("vit_precision", "fp16")
+        vit_precision = cfg.get("vit_precision", "fp4")
         freeze_vit = cfg.get("freeze_vit", True)
 
         prompt = cfg.get("prompt", "")
