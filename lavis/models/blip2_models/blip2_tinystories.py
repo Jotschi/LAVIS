@@ -82,6 +82,12 @@ class Blip2TinyStories(Blip2Base):
             "\n", add_special_tokens=False
         ).input_ids[0]
 
+
+        # Patch 1
+        logging.info("eos_token_id: {}".format(self.eos_token_id))
+        self.tinystories_tokenizer.pad_token = self.eos_token_id
+        #self.tinystories_tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+
         self.tinystories_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.tinystories_model.config.hidden_size
         )
@@ -136,7 +142,10 @@ class Blip2TinyStories(Blip2Base):
         )
         targets = torch.cat([empty_targets, targets], dim=1)
 
-        inputs_embeds = self.tinystories_model.model.decoder.embed_tokens(tinystories_tokens.input_ids)
+        # Patch 2:
+        #Org: inputs_embeds = self.tinystories_model.model.decoder.embed_tokens(tinystories_tokens.input_ids)
+        inputs_embeds = self.tinystories_model.encoder.embed_tokens(tinystories_tokens.input_ids)
+
         inputs_embeds = torch.cat([inputs_opt, inputs_embeds], dim=1)
         attention_mask = torch.cat([atts_opt, tinystories_tokens.attention_mask], dim=1)
 
