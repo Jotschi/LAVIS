@@ -101,6 +101,8 @@ class Blip2TinyStories(Blip2Base):
         self._lemmatizer = None       
 
     def forward(self, samples):
+
+        # 1. Generate image embeddings using the frozen image encoder
         image = samples["image"]
         with self.maybe_autocast():
             image_embeds = self.ln_vision(self.visual_encoder(image))
@@ -108,6 +110,7 @@ class Blip2TinyStories(Blip2Base):
             image.device
         )
 
+        # 2. Combine the visual QA query tokens with the image token and the attention mask and run it via the qformer
         query_tokens = self.query_tokens.expand(image_embeds.shape[0], -1, -1)
         query_output = self.Qformer.bert(
             query_embeds=query_tokens,
@@ -116,13 +119,15 @@ class Blip2TinyStories(Blip2Base):
             return_dict=True,
         )
 
+        # Conversion? No idea
         inputs_opt = self.tinystories_proj(query_output.last_hidden_state)
         atts_opt = torch.ones(inputs_opt.size()[:-1], dtype=torch.long).to(image.device)
 
+        # Prepare the image caption/sample for training
         self.tinystories_tokenizer.padding_side = "right"
-
         text = [t + "\n" for t in samples["text_input"]]
 
+        # Tokenize the text
         tinystories_tokens = self.tinystories_tokenizer(
             text,
             return_tensors="pt",
@@ -131,6 +136,7 @@ class Blip2TinyStories(Blip2Base):
             max_length=self.max_txt_len,
         ).to(image.device)
 
+        # Padding? No idea
         targets = tinystories_tokens.input_ids.masked_fill(
             tinystories_tokens.input_ids == self.tinystories_tokenizer.pad_token_id, -100
         )
@@ -144,8 +150,9 @@ class Blip2TinyStories(Blip2Base):
 
         # Patch 2:
         #Org: inputs_embeds = self.tinystories_model.model.decoder.embed_tokens(tinystories_tokens.input_ids)
-        inputs_embeds = self.tinystories_model.encoder.embed_tokens(tinystories_tokens.input_ids)
+        inputs_embeds = self.tinystories_model.transformer.wte( tinystories_tokens.input_ids)
 
+        # Combine the input ids with the attention mask before feeding it into the llm
         inputs_embeds = torch.cat([inputs_opt, inputs_embeds], dim=1)
         attention_mask = torch.cat([atts_opt, tinystories_tokens.attention_mask], dim=1)
 
