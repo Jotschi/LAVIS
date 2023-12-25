@@ -46,12 +46,12 @@ run:
 
   weight_decay: 0.05
   max_epoch: 10
-  batch_size_train: 4
-  batch_size_eval: 8
+  batch_size_train: 64
+  batch_size_eval: 64
   num_workers: 4
   warmup_steps: 2000
 
-  seed: 42
+  seed: 421
   output_dir: "output/BLIP2/Pretrain_stage2_tinystories33m"
 
   amp: True

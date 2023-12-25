@@ -19,6 +19,7 @@ Try out our [Notebook Demo](https://github.com/salesforce/LAVIS/blob/main/exampl
 # Architectures                  Types
 # ==================================================
 # blip2_opt                      pretrain_opt2.7b, caption_coco_opt2.7b, pretrain_opt6.7b, caption_coco_opt6.7b
+# blip2_tinystories              pretrain_tinystories33m, caption_coco_tinystories33m
 # blip2_t5                       pretrain_flant5xl, caption_coco_flant5xl, pretrain_flant5xxl
 # blip2                          pretrain, coco
 ```
