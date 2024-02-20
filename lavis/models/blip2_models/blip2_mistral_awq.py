@@ -123,8 +123,8 @@ class Blip2MistralAWQ(Blip2Base):
             return_dict=True,
         )
 
-        inputs_mistral = self.mistral_proj(query_output.last_hidden_state)
-        atts_mistral = torch.ones(inputs_mistral.size()[:-1], dtype=torch.long).to(image.device)
+        inputs_opt = self.mistral_proj(query_output.last_hidden_state)
+        atts_opt = torch.ones(inputs_opt.size()[:-1], dtype=torch.long).to(image.device)
 
         self.mistral_tokenizer.padding_side = "right"
 
@@ -145,13 +145,15 @@ class Blip2MistralAWQ(Blip2Base):
             targets[:, : self.prompt_length] = -100  # do not apply loss to the prompt
 
         empty_targets = (
-            torch.ones(atts_mistral.size(), dtype=torch.half).to(image.device).fill_(-100)
+            torch.ones(atts_opt.size(), dtype=torch.half).to(image.device).fill_(-100)
         )
         targets = torch.cat([empty_targets, targets], dim=1)
 
-        inputs_embeds = self.mistral_model.model.get_decoder().embed_tokens(input_tokens.input_ids)
-        inputs_embeds = torch.cat([inputs_mistral, inputs_embeds], dim=1).to(torch.half)
-        attention_mask = torch.cat([atts_mistral, input_tokens.attention_mask], dim=1).to(torch.half)
+        inputs_embeds = self.mistral_model.transformer.wte(input_tokens.input_ids)
+
+         # Combine the input ids with the attention mask before feeding it into the llm
+        inputs_embeds = torch.cat([inputs_opt, inputs_embeds], dim=1)
+        attention_mask = torch.cat([atts_opt, input_tokens.attention_mask], dim=1)
 
         #with self.maybe_autocast():
         #with torch.autocast("cuda"):
