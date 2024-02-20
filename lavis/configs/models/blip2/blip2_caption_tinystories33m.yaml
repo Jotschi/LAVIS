@@ -2,8 +2,8 @@ model:
   arch: caption_coco_tinystories33m
   load_finetuned: True
 
-  pretrained: "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_tinystories33m.pth"
-  finetuned: "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_caption_tinystories33m.pth"
+  pretrained: "lavis/output/BLIP2/Pretrain_stage2_tinystories33m-finetuned/20240210231/checkpoint_0.pth"
+  finetuned: "lavis/output/BLIP2/Pretrain_stage2_tinystories33m-finetuned/20240210231/checkpoint_0.pth"
 
   # vit encoder
   image_size: 364
@@ -16,7 +16,8 @@ model:
   num_query_token: 32
 
   # TinyStories
-  tinystories_model: "roneneldan/TinyStories-33M"
+  # tinystories_model: "roneneldan/TinyStories-33M"
+  tinystories_model: "/extra/workspaces/ml/lavis-experiments/tinystories-finetune/finetune-tinystories/finetuned/checkpoint-5500"
 
   # generation configs
   prompt: "a picture of"

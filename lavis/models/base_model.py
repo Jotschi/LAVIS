@@ -41,6 +41,8 @@ class BaseModel(nn.Module):
         elif os.path.isfile(url_or_filename):
             checkpoint = torch.load(url_or_filename, map_location="cpu")
         else:
+
+            print(url_or_filename)
             raise RuntimeError("checkpoint url or path is invalid")
 
         if "model" in checkpoint.keys():

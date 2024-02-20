@@ -203,6 +203,9 @@ def load_model_and_preprocess(name, model_type, is_eval=False, device="cpu"):
     """
     model_cls = registry.get_model_class(name)
 
+    if model_cls is None:
+        logging.error("Model Class " + name + " not found!")
+
     # load model
     model = model_cls.from_pretrained(model_type=model_type)
 

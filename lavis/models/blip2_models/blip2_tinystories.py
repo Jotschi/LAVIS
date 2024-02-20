@@ -72,6 +72,7 @@ class Blip2TinyStories(Blip2Base):
             layer.output = None
             layer.intermediate = None
 
+        logging.info("Loading tiny stories model %s", tinystories_model)
         self.tinystories_tokenizer = AutoTokenizer.from_pretrained(tokenizer_model, use_fast=False)
         self.tinystories_model = AutoModelForCausalLM.from_pretrained(
             tinystories_model, torch_dtype=torch.float16
@@ -94,6 +95,7 @@ class Blip2TinyStories(Blip2Base):
 
         self.max_txt_len = max_txt_len
         self.prompt = prompt
+        logging.info("Using prompt: %s", prompt)
         prompt_tokens = self.tinystories_tokenizer(self.prompt, return_tensors="pt")
         self.prompt_length = prompt_tokens.attention_mask.sum(1)
         
@@ -172,7 +174,7 @@ class Blip2TinyStories(Blip2Base):
         self,
         samples,
         use_nucleus_sampling=False,
-        num_beams=5,
+        num_beams=1,
         max_length=30,
         min_length=1,
         top_p=0.9,
@@ -211,9 +213,7 @@ class Blip2TinyStories(Blip2Base):
             )
 
             inputs_opt = self.tinystories_proj(query_output.last_hidden_state)
-            atts_opt = torch.ones(inputs_opt.size()[:-1], dtype=torch.long).to(
-                image.device
-            )
+            atts_opt = torch.ones(inputs_opt.size()[:-1], dtype=torch.long).to(image.device)
 
             if "prompt" in samples.keys():
                 prompt = samples["prompt"]
@@ -229,9 +229,10 @@ class Blip2TinyStories(Blip2Base):
                 truncation=True,
                 max_length=self.max_txt_len,
             ).to(image.device)
+
             attention_mask = torch.cat([atts_opt, tinystories_tokens.attention_mask], dim=1)
             
-            # new version for transformers>=4.27
+        with self.maybe_autocast(dtype=torch.bfloat16):
             inputs_embeds = self.tinystories_model.get_input_embeddings()(tinystories_tokens.input_ids)
             inputs_embeds = torch.cat([inputs_opt,inputs_embeds],dim=1)
             
@@ -252,34 +253,6 @@ class Blip2TinyStories(Blip2Base):
             output_text = self.tinystories_tokenizer.batch_decode(
                 outputs, skip_special_tokens=True
             )
-                            
-            # previous version for transformers<4.27
-            # if use_nucleus_sampling:
-            #     query_embeds = inputs_opt.repeat_interleave(num_captions, dim=0)
-            #     num_beams = 1
-            # else:
-            #     query_embeds = inputs_opt.repeat_interleave(num_beams, dim=0)
-
-            # outputs = self.tinystories_model.generate(
-            #     input_ids=input_ids,
-            #     query_embeds=query_embeds,
-            #     attention_mask=attention_mask,
-            #     do_sample=use_nucleus_sampling,
-            #     top_p=top_p,
-            #     temperature=temperature,
-            #     num_beams=num_beams,
-            #     max_new_tokens=max_length,
-            #     min_length=min_length,
-            #     eos_token_id=self.eos_token_id,
-            #     repetition_penalty=repetition_penalty,
-            #     length_penalty=length_penalty,
-            #     num_return_sequences=num_captions,
-            # )
-
-            # prompt_length = tinystories_tokens.input_ids.shape[1]
-            # output_text = self.tinystories_tokenizer.batch_decode(
-            #     outputs[:, prompt_length:], skip_special_tokens=True
-            # )
             
             output_text = [text.strip() for text in output_text]
             return output_text
@@ -288,7 +261,7 @@ class Blip2TinyStories(Blip2Base):
     def predict_answers(
         self,
         samples,
-        num_beams=5,
+        num_beams=1,
         inference_method="generate",
         max_len=10,
         min_len=1,
@@ -343,7 +316,7 @@ class Blip2TinyStories(Blip2Base):
             outputs = self.tinystories_model.generate(
                 inputs_embeds=inputs_embeds,
                 attention_mask=attention_mask,
-                do_sample=False,
+                do_sample=True,
                 num_beams=num_beams,
                 max_new_tokens=max_len,
                 min_length=min_len,

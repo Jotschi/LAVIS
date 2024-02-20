@@ -5,16 +5,25 @@ from lavis.processors import load_processor
 from transformers import Blip2Processor, Blip2ForConditionalGeneration
 import torch
 
-image = Image.open("test.jpg").convert("RGB")
+#from lavis.models import model_zoo
+#print(model_zoo)
+
+raw_image = Image.open("space.jpg").convert("RGB")
 device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
 
-model, processor, _ = load_model_and_preprocess(
-    name="Blip2TinyStories", model_type="pretrain_tinystories33m", is_eval=True, device=device
+model, vis_processors, _ = load_model_and_preprocess(
+    name="blip2_tinystories", 
+    model_type="caption_coco_tinystories33m", 
+    is_eval=True,
+    device=device
 )
 
+image = vis_processors["eval"](raw_image).unsqueeze(0).to(device)
+print(model.generate({"image": image}))
 
-inputs = processor(image, return_tensors="pt").to(device, torch.float16)
-generated_ids = model.generate(**inputs, max_new_tokens=20)
-generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
-print(generated_text)
+#print("--------")
+#inputs = vis_processors["eval"](raw_image, return_tensors="pt").to(device, torch.float16)
+#generated_ids = model.generate(**inputs, max_new_tokens=20)
+#generated_text = vis_processors["eval"].batch_decode(generated_ids, skip_special_tokens=True)[0].strip()
+#print(generated_text)
 

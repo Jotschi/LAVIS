@@ -7,12 +7,12 @@ model:
   arch: blip2_tinystories
   model_type: pretrain_tinystories33m
   load_pretrained: True
+  tinystories_model: "/extra/workspaces/ml/lavis-experiments/tinystories-finetune/finetune-tinystories/finetuned/checkpoint-5500"
   # intialize stage 2 pretraining from stage 1 pretrained model
   #pretrained: "https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained.pth"
-  pretrained: "lavis/output/BLIP2/Pretrain_stage2_tinystories33m/20231228115/checkpoint_0.pth"
-
+  pretrained: "lavis/output/BLIP2/Pretrain_stage2_tinystories33m-finetuned/20240210231/checkpoint_0.pth"
+  prompt: "a picture of"
   freeze_vit: True
-
 
 datasets:
   coco_caption:
@@ -22,6 +22,7 @@ datasets:
           image_size: 224
     text_processor:
         train:
+          prompt: "A picture of: "
           name: "blip_caption"
     # build_info:
     #     images:
@@ -54,7 +55,7 @@ run:
   warmup_steps: 2000
 
   seed: 421
-  output_dir: "output/BLIP2/Pretrain_stage2_tinystories33m"
+  output_dir: "output/BLIP2/Pretrain_stage2_tinystories33m-finetuned"
 
   amp: True
   resume_ckpt_path: null

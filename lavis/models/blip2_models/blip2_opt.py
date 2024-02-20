@@ -205,9 +205,7 @@ class Blip2OPT(Blip2Base):
             )
 
             inputs_opt = self.opt_proj(query_output.last_hidden_state)
-            atts_opt = torch.ones(inputs_opt.size()[:-1], dtype=torch.long).to(
-                image.device
-            )
+            atts_opt = torch.ones(inputs_opt.size()[:-1], dtype=torch.long).to(image.device)
 
             if "prompt" in samples.keys():
                 prompt = samples["prompt"]
