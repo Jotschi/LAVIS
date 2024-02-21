@@ -144,7 +144,8 @@ class Blip2Mistral(Blip2Base):
         )
         targets = torch.cat([empty_targets, targets], dim=1)
 
-        inputs_embeds = self.mistral_model.model.decoder.embed_tokens(input_tokens.input_ids)
+        #inputs_embeds = self.mistral_model.transformer.wte(input_tokens.input_ids)
+        inputs_embeds = self.mistral_model.model.embed_tokens(input_tokens.input_ids)
         inputs_embeds = torch.cat([inputs_mistral, inputs_embeds], dim=1)
         attention_mask = torch.cat([atts_mistral, input_tokens.attention_mask], dim=1)
 

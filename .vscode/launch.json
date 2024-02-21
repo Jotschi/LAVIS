@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Mistral7b-AWQ Training",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/train.py", 
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": ["--cfg-path", "lavis/projects/blip2/train/pretrain_stage2-mistral7b_awq.yaml"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Mistral7b Training",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/train.py", 
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": ["--cfg-path", "lavis/projects/blip2/train/pretrain_stage2-mistral7b.yaml"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "TinyStories Training",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/train.py", 
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": ["--cfg-path", "lavis/projects/blip2/train/pretrain_stage2_tinystories33m.yaml"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "TinyStories Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test.py", 
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": ["test.jpg"],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

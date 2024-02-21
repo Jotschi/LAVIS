@@ -149,7 +149,9 @@ class Blip2MistralAWQ(Blip2Base):
         )
         targets = torch.cat([empty_targets, targets], dim=1)
 
-        inputs_embeds = self.mistral_model.transformer.wte(input_tokens.input_ids)
+        #inputs_embeds = self.mistral_model.transformer.wte(input_tokens.input_ids)
+        inputs_embeds = self.mistral_model.model.decoder.embed_tokens(input_tokens.input_ids)
+
 
          # Combine the input ids with the attention mask before feeding it into the llm
         inputs_embeds = torch.cat([inputs_opt, inputs_embeds], dim=1)
