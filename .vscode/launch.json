@@ -25,6 +25,15 @@
             "justMyCode": true
         },
         {
+            "name": "Mistral7b Test",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/test.py", 
+            "python": "${workspaceFolder}/venv/bin/python",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "TinyStories Training",
             "type": "debugpy",
             "request": "launch",
