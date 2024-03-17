@@ -7,8 +7,8 @@ model:
   arch: caption_coco_mistral7b
   load_finetuned: True
 
-  pretrained: "lavis/output/BLIP2/Pretrain_stage2_mistral7b/20240221205/checkpoint_0.pth"
-  finetuned: "lavis/output/BLIP2/Pretrain_stage2_mistral7b/20240221205/checkpoint_0.pth"
+  pretrained: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
+  finetuned: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
 
 
   # vit encoder
@@ -22,10 +22,10 @@ model:
   num_query_token: 32
 
   # Mistral
-  mistral_model: "mistralai/Mistral-7B-v0.1"
+  mistral_model: "/home/jotschi/workspaces/ml/lavis-experiments/mistral-deepspeed/models/r256-b4-a16-seq512-l2.0e-5_no_eos-500"
 
   # generation configs
-  prompt: "a photo of"
+  prompt: ""
 
 
 preprocess:

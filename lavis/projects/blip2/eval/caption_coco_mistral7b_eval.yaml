@@ -4,8 +4,11 @@
  # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_opt
+  arch: blip2_mistral
   model_type: caption_coco_mistral7b
+  mistral_model: "/home/jotschi/workspaces/ml/lavis-experiments/mistral-deepspeed/models/r256-b4-a16-seq512-l2.0e-5_no_eos-500"
+  pretrained: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
+  finetuned: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
   use_grad_checkpoint: False
 
 datasets:

@@ -4,7 +4,7 @@
  # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_opt
+  arch: blip2_mistral
   model_type: caption_coco_mistral7b_awq
   use_grad_checkpoint: False
 

@@ -13,7 +13,7 @@ import torch.nn as nn
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
-from transformers import AutoTokenizer, MistralForCausalLM, MistralConfig
+from transformers import AutoTokenizer, BitsAndBytesConfig, MistralForCausalLM, MistralConfig
 import transformers
 
 
@@ -54,7 +54,9 @@ class Blip2Mistral(Blip2Base):
         super().__init__()
         transformers_version = version.parse(transformers.__version__)
         assert transformers_version >= version.parse("4.34"), "BLIP-2 Mistral requires transformers>=4.34"
-        
+        logging.info("Using vit_precision %s", vit_precision)
+        logging.info("Checkpointing %s", use_grad_checkpoint)
+        logging.info("image_size: %s", img_size)
         self.tokenizer = self.init_tokenizer()
 
         self.visual_encoder, self.ln_vision = self.init_vision_encoder(
@@ -80,8 +82,18 @@ class Blip2Mistral(Blip2Base):
         self.mistral_tokenizer = AutoTokenizer.from_pretrained(mistral_model)
         self.mistral_tokenizer.pad_token = self.mistral_tokenizer.eos_token
 
+        quantization_config = BitsAndBytesConfig(
+            load_in_8bit=False, load_in_4bit=True
+        )
+        torch_dtype = torch.float16
+
+        logging.info("Using model: %s", mistral_model)
+        #secondary = "cuda:0"
+        #   device_map = secondary
         self.mistral_model = MistralForCausalLM.from_pretrained(
-            mistral_model, torch_dtype=torch.float16
+            mistral_model,
+            torch_dtype=torch_dtype,
+            quantization_config=quantization_config,
         )
         for name, param in self.mistral_model.named_parameters():
             param.requires_grad = False

@@ -18,12 +18,12 @@ model, vis_processors, _ = load_model_and_preprocess(
     device=device
 )
 
-directory = os.fsencode(".")
+directory = os.fsencode("test-images")
 
 for file in os.listdir(directory):
     filename = os.fsdecode(file)
     if filename.endswith(".jpg"):
-        raw_image = Image.open(filename).convert("RGB")
+        raw_image = Image.open("test-images/" + filename).convert("RGB")
         image = vis_processors["eval"](raw_image).unsqueeze(0).to(device)
         print("\n" + filename)
         print(model.generate({"image": image}))
