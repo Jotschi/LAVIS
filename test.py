@@ -4,11 +4,11 @@ from lavis.models import load_model_and_preprocess
 from lavis.processors import load_processor
 from transformers import Blip2Processor, Blip2ForConditionalGeneration
 import torch
+import os
 
 #from lavis.models import model_zoo
 #print(model_zoo)
 
-raw_image = Image.open("car.jpg").convert("RGB")
 device = torch.device("cuda") if torch.cuda.is_available() else "cpu"
 
 model, vis_processors, _ = load_model_and_preprocess(
@@ -18,8 +18,15 @@ model, vis_processors, _ = load_model_and_preprocess(
     device=device
 )
 
-image = vis_processors["eval"](raw_image).unsqueeze(0).to(device)
-print(model.generate({"image": image}))
+directory = os.fsencode(".")
+
+for file in os.listdir(directory):
+    filename = os.fsdecode(file)
+    if filename.endswith(".jpg"):
+        raw_image = Image.open(filename).convert("RGB")
+        image = vis_processors["eval"](raw_image).unsqueeze(0).to(device)
+        print("\n" + filename)
+        print(model.generate({"image": image}))
 
 #print("--------")
 #inputs = vis_processors["eval"](raw_image, return_tensors="pt").to(device, torch.float16)
