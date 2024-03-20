@@ -22,10 +22,11 @@ model:
   num_query_token: 32
 
   # Mistral
-  mistral_model: "/home/jotschi/workspaces/ml/lavis-experiments/mistral-deepspeed/models/r256-b4-a16-seq512-l2.0e-5_no_eos-500"
+  mistral_model: "/home/jotschi/workspaces/ml/lavis-experiments/mistral-deepspeed/models/r256-b4-a16-seq512-l2.0e-5_prefix-8500"
+
 
   # generation configs
-  prompt: ""
+  prompt: "Bildbeschreibung: "
 
 
 preprocess:

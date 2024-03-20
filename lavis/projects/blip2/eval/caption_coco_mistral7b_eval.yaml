@@ -7,9 +7,13 @@ model:
   arch: blip2_mistral
   model_type: caption_coco_mistral7b
   mistral_model: "/home/jotschi/workspaces/ml/lavis-experiments/mistral-deepspeed/models/r256-b4-a16-seq512-l2.0e-5_no_eos-500"
-  pretrained: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
-  finetuned: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
+  pretrained: "/home/jotschi/workspaces/ml/LAVIS/lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
+  finetuned:  "/home/jotschi/workspaces/ml/LAVIS/lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom/20240317020/checkpoint_0.pth"
+  #pretrained: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom_unfreeze/20240317213/checkpoint_0.pth"
+  #finetuned: "lavis/output/BLIP2/Pretrain_stage2_mistral7b_custom_unfreeze/20240317213/checkpoint_0.pth"
   use_grad_checkpoint: False
+  prompt: "Bildbeschreibung: "
+
 
 datasets:
   coco_caption: # name of the dataset builder

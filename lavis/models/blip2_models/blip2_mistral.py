@@ -135,7 +135,7 @@ class Blip2Mistral(Blip2Base):
 
         self.mistral_tokenizer.padding_side = "right"
 
-        text = [t + "\n" for t in samples["text_input"]]
+        text = [t for t in samples["text_input"]]
 
         input_tokens = self.mistral_tokenizer(
             text,
